@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام البيانات الخاص</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
+        body { font-family: 'Tajawal', sans-serif; background-color: #f8fafc; }
+        .hidden-content { display: none; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div id="login-screen" class="max-w-md mx-auto mt-20 bg-white p-8 rounded-2xl shadow-2xl text-center border border-gray-100">
+        <div class="mb-6 text-blue-600">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+        </div>
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">منطقة محمية</h2>
+        <input type="password" id="pass-input" class="border-2 border-gray-200 p-3 w-full mb-4 rounded-xl focus:border-blue-500 outline-none transition" placeholder="أدخل كلمة السر للدخول">
+        <button onclick="checkPass()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl w-full shadow-lg transition">دخول النظام</button>
+        <p id="error-msg" class="text-red-500 mt-4 hidden font-medium">⚠️ كلمة المرور غير صحيحة!</p>
+    </div>
+
+    <div id="main-content" class="hidden-content max-w-6xl mx-auto">
+        <header class="flex justify-between items-center mb-10 bg-white p-6 rounded-2xl shadow-sm">
+            <h1 class="text-2xl font-bold text-gray-800">لوحة بيانات العائلة</h1>
+            <button onclick="location.reload()" class="text-sm bg-gray-100 px-4 py-2 rounded-lg hover:bg-gray-200">تسجيل الخروج</button>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div class="md:col-span-1 bg-gradient-to-br from-blue-600 to-blue-800 p-6 rounded-2xl shadow-lg text-white">
+                <h2 class="text-lg font-bold mb-4">حاسبة العمر السريعة</h2>
+                <input type="date" id="birthdate-input" class="w-full p-3 rounded-xl text-gray-800 mb-4 outline-none">
+                <button onclick="quickAge()" class="w-full bg-white text-blue-700 font-bold py-2 rounded-xl hover:bg-blue-50 transition">احسب العمر</button>
+                <div id="quick-result" class="mt-4 font-medium text-center bg-blue-500/30 py-2 rounded-lg hidden"></div>
+            </div>
+
+            <div class="md:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-around">
+                <div class="text-center">
+                    <p class="text-gray-500 text-sm">عدد السجلات</p>
+                    <p class="text-3xl font-bold text-blue-600" id="count-total">15</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-gray-500 text-sm">آخر تحديث</p>
+                    <p class="text-lg font-bold text-gray-700">2026-04-29</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-right">
+                    <thead>
+                        <tr class="bg-gray-50 border-b border-gray-100">
+                            <th class="p-4 font-bold text-gray-600">الاسم (عربي)</th>
+                            <th class="p-4 font-bold text-gray-600 text-center">الاسم (EN)</th>
+                            <th class="p-4 font-bold text-gray-600 text-center">ميلادي</th>
+                            <th class="p-4 font-bold text-gray-600 text-center">هجري</th>
+                            <th class="p-4 font-bold text-gray-600">العمر الحالي بالتفصيل</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body" class="divide-y divide-gray-50">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ACCESS_KEY = "2026"; // غير كلمة السر هنا
+
+        const familyMembers = [
+            {ar: "حـب. عبـ.", en: "Hab. Abd.", d: "1980-02-01", h: "1400-03-14"},
+            {ar: "إفـ. عبـ.", en: "Ift. Abd.", d: "1982-06-01", h: "1402-08-09"},
+            {ar: "هنـ. عبـ.", en: "Han. Abd.", d: "1986-06-01", h: "1406-09-24"},
+            {ar: "افـ. عبـ.", en: "Ift. Abd.", d: "1988-11-01", h: "1409-03-23"},
+            {ar: "سهـ. عبـ.", en: "Sih. Abd.", d: "1989-11-01", h: "1410-04-03"},
+            {ar: "طلـ. عبـ.", en: "Tal. Abd.", d: "1990-10-01", h: "1411-03-12"},
+            {ar: "ند. عبـ.", en: "Nid. Abd.", d: "1996-07-01", h: "1417-02-14"},
+            {ar: "شا. فا.", en: "Sha. Far.", d: "2003-08-28", h: "1424-07-01"},
+            {ar: "محـ. حبـ.", en: "Mah. Hab.", d: "2004-08-12", h: "1425-06-26"},
+            {ar: "شذ. فا.", en: "Sha. Far.", d: "2005-04-03", h: "1426-02-24"},
+            {ar: "شا. فا.", en: "Sha. Far.", d: "2008-03-17", h: "1429-03-09"},
+            {ar: "محـ. فا.", en: "Moh. Far.", d: "2010-05-26", h: "1431-06-12"},
+            {ar: "وئـ. فا.", en: "Wia. Far.", d: "2012-10-21", h: "1433-12-05"},
+            {ar: "فا. فا.", en: "Far. Fai.", d: "2022-10-13", h: "1444-03-17"},
+            {ar: "عا. فا.", en: "Ala. Fai.", d: "2023-12-02", h: "1445-05-18"}
+        ];
+
+        function checkPass() {
+            if(document.getElementById('pass-input').value === ACCESS
